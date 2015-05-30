@@ -1,24 +1,34 @@
 # cordova-plugin-inappbrowser-xwalk
 
-This plugin provides a Crosswalk web browser view for Android devices.
+This plugin provides a web browser view, which is using the Crosswalk engine
+to render pages.
+
+##Requirements
+This plugin requires Cordova build with Crosswalk.
+
 
 ## Installation
 
-    $ cordova plugin add com.shoety.cordova.inappbrowser-xwalk
+    $ cordova plugin add com.shoety.cordova.plugin.inappbrowserxwalk
     
 
-##Using
-
+## Example
 ```js
-	cordova.
     var options = {
-					toolbarColor: ''
+					toolbarColor: '#FFFFFF', // Background color of the toolbar in #RRGGBB
+					toolbarHeight: '40',
+					closeButtonText: '< Close',
+					closeButtonSize: '25',
+					closeButtonColor: '#000000',
 				  };
 
-    var failure = function() {
-        alert("Error calling Hello Plugin");
-    }
-
-    hello.greet("World", success, failure);
+    if( window.cordova && cordova.platformId === "android" ) {
+		window.inAppBrowserXwalk.open("http://google.de", options);
+	}
+	else {
+		window.open("http://google.de", "_blank");
+	}
 ```
+
+Options is an optional Parameter, leaving it out, opens the browser with standard settings.
 
