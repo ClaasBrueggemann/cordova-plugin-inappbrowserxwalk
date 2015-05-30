@@ -26,7 +26,7 @@ This plugin requires Cordova build with Crosswalk.
 		window.inAppBrowserXwalk.open("http://google.de", options);
 	}
 	else {
-		window.open("http://google.de", "_blank");
+		window.open("http://shoety.de", "_blank");
 	}
 ```
 
