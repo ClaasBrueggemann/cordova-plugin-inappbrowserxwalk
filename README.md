@@ -1,4 +1,4 @@
-# cordova-plugin-inappbrowser-xwalk
+# cordova-plugin-inappbrowserxwalk
 
 This plugin provides a web browser view, which is using the Crosswalk engine
 to render pages.
