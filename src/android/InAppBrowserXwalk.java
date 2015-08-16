@@ -4,11 +4,18 @@ import com.example.plugin.InAppBrowserXwalk.BrowserDialog;
 
 import android.content.res.Resources;
 import org.apache.cordova.*;
+import org.apache.cordova.PluginManager;
+import org.apache.cordova.PluginResult;
+
 import org.json.JSONArray;
-import org.xwalk.core.XWalkView;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.internal.XWalkViewInternal;
+
+import android.view.View;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
@@ -17,71 +24,124 @@ import android.widget.TextView;
 import android.graphics.Typeface;
 import android.widget.Toast;
 
+import android.webkit.WebResourceResponse;
+
 public class InAppBrowserXwalk extends CordovaPlugin {
+
+    private BrowserDialog dialog;
+    private XWalkView xWalkWebView;
+    private CallbackContext callbackContext;
 
     @Override
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
 
-        final String url = action;
-
-        String toolbarColor = "#FFFFFF";
-        int toolbarHeight = 80;
-        String closeButtonText = "< Close";
-        int closeButtonSize = 25;
-        String closeButtonColor = "#000000";
-
-        if(data != null && data.length() > 0) {
-            JSONObject options = new JSONObject(data.getString(0));
-
-            if(!options.isNull("toolbarColor")) {
-                toolbarColor = options.getString("toolbarColor");
-            }
-            if(!options.isNull("toolbarHeight")) {
-                toolbarHeight = options.getInt("toolbarHeight");
-            }
-            if(!options.isNull("closeButtonText")) {
-                closeButtonText = options.getString("closeButtonText");
-            }
-            if(!options.isNull("closeButtonSize")) {
-                closeButtonSize = options.getInt("closeButtonSize");
-            }
-            if(!options.isNull("closeButtonColor")) {
-                closeButtonColor = options.getString("closeButtonColor");
-            }
+        if(action.equals("open")) {
+            this.callbackContext = callbackContext;
+            this.openBrowser(data);
         }
 
-        final String _toolbarColor = toolbarColor;
-        final int _toolbarHeight = toolbarHeight;
-        final String _closeButtonText = closeButtonText;
-        final int _closeButtonSize =  closeButtonSize;
-        final String _closeButtonColor = closeButtonColor;
+        if(action.equals("close")) {
+            this.closeBrowser();
+        }
 
+        return true;
+    }
 
+    class MyResourceClient extends XWalkResourceClient {
+           MyResourceClient(XWalkView view) {
+               super(view);
+           }
+
+           @Override
+           public void onLoadStarted (XWalkView view, String url) {
+               try {
+                   JSONObject obj = new JSONObject();
+                   obj.put("type", "loadstart");
+                   obj.put("url", url);
+                   PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                   result.setKeepCallback(true);
+                   callbackContext.sendPluginResult(result);
+               } catch (JSONException ex) {}
+           }
+
+           @Override
+           public void onLoadFinished (XWalkView view, String url) {
+               try {
+                   JSONObject obj = new JSONObject();
+                   obj.put("type", "loadstop");
+                   obj.put("url", url);
+                   PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                   result.setKeepCallback(true);
+                   callbackContext.sendPluginResult(result);
+               } catch (JSONException ex) {}
+           }
+   }
+
+    private void openBrowser(final JSONArray data) throws JSONException {
+        final String url = data.getString(0);
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                XWalkView xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
+                dialog = new BrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
+                xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
+                xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
                 xWalkWebView.load(url, "");
+
+                String toolbarColor = "#FFFFFF";
+                int toolbarHeight = 80;
+                String closeButtonText = "< Close";
+                int closeButtonSize = 25;
+                String closeButtonColor = "#000000";
+
+                if(data != null && data.length() > 1) {
+                    try {
+                            JSONObject options = new JSONObject(data.getString(1));
+
+                            if(!options.isNull("toolbarColor")) {
+                                toolbarColor = options.getString("toolbarColor");
+                            }
+                            if(!options.isNull("toolbarHeight")) {
+                                toolbarHeight = options.getInt("toolbarHeight");
+                            }
+                            if(!options.isNull("closeButtonText")) {
+                                closeButtonText = options.getString("closeButtonText");
+                            }
+                            if(!options.isNull("closeButtonSize")) {
+                                closeButtonSize = options.getInt("closeButtonSize");
+                            }
+                            if(!options.isNull("closeButtonColor")) {
+                                closeButtonColor = options.getString("closeButtonColor");
+                            }
+                        }
+                    catch (JSONException ex) {
+
+                    }
+                }
 
                 LinearLayout main = new LinearLayout(cordova.getActivity());
                 main.setOrientation(LinearLayout.VERTICAL);
 
                 RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
-                toolbar.setBackgroundColor(android.graphics.Color.parseColor(_toolbarColor));
-                toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, _toolbarHeight));
+                toolbar.setBackgroundColor(android.graphics.Color.parseColor(toolbarColor));
+                toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, toolbarHeight));
                 toolbar.setPadding(5, 5, 5, 5);
 
                 TextView closeButton = new TextView(cordova.getActivity());
-                closeButton.setText(_closeButtonText);
-                closeButton.setTextSize(_closeButtonSize);
-                closeButton.setTextColor(android.graphics.Color.parseColor(_closeButtonColor));
+                closeButton.setText(closeButtonText);
+                closeButton.setTextSize(closeButtonSize);
+                closeButton.setTextColor(android.graphics.Color.parseColor(closeButtonColor));
                 closeButton.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
                 toolbar.addView(closeButton);
+
+                closeButton.setOnClickListener(new View.OnClickListener() {
+                     public void onClick(View v) {
+                         closeBrowser();
+                     }
+                 });
 
                 main.addView(toolbar);
                 main.addView(xWalkWebView);
 
-                BrowserDialog dialog = new BrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar, closeButton);
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
                 dialog.setCancelable(true);
@@ -90,6 +150,15 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 dialog.show();
             }
         });
-        return true;
+    }
+
+    public void closeBrowser() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                xWalkWebView.onDestroy();
+                dialog.dismiss();
+            }
+        });
     }
 }
