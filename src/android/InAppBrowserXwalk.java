@@ -162,6 +162,13 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             public void run() {
                 xWalkWebView.onDestroy();
                 dialog.dismiss();
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("type", "exit");
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                    result.setKeepCallback(true);
+                    callbackContext.sendPluginResult(result);
+                } catch (JSONException ex) {}
             }
         });
     }

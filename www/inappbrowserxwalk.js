@@ -25,6 +25,9 @@ var callback = function(event) {
     if (event.type === "loadstop" && callbacks['loadstop'] !== undefined) {
         callbacks['loadstop'](event.url);
     }
+    if (event.type === "exit" && callbacks['exit'] !== undefined) {
+        callbacks['exit']();
+    }
 }
 
 module.exports = {

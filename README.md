@@ -10,7 +10,7 @@ This plugin requires Cordova build with Crosswalk.
 ## Installation
 
     $ cordova plugin add com.shoety.cordova.plugin.inappbrowserxwalk
-    
+
 ## Methods
 
 ### open
@@ -31,7 +31,7 @@ Closes the browser.
 	browser.addEventListener(eventname, callback)
 ```
 Adds a listener for an event from the crosswalk browser.
-Possible events: loadstart, loadstop
+Possible events: loadstart, loadstop, exit
 
 ### removeEventListener
 ```js
@@ -44,23 +44,27 @@ Removes the eventlistener for an event.
 ## Examples
 ```js
 	var options = {
-				toolbarColor: '#FFFFFF', // Background color of the toolbar in #RRGGBB
-				toolbarHeight: '40',
-				closeButtonText: '< Close',
-				closeButtonSize: '25',
-				closeButtonColor: '#000000',
-			};
+    				toolbarColor: '#FFFFFF', // Background color of the toolbar in #RRGGBB
+    				toolbarHeight: '40',
+    				closeButtonText: '< Close',
+    				closeButtonSize: '25',
+    				closeButtonColor: '#000000',
+		          };
 
     if( window.cordova && cordova.platformId === "android" ) {
 		var browser = window.inAppBrowserXwalk.open("http://google.de", options);
-		
+
 		browser.addEventListener("loadstart", function ( url ) {
-	            console.log(url);
-	        });
-	        
-	        browser.addEventListener("loadstop", function ( url ) {
-	            console.log(url);
-	        });
+            console.log(url);
+        });
+
+        browser.addEventListener("loadstop", function ( url ) {
+            console.log(url);
+        });
+
+        browser.addEventListener("exit", function () {
+            console.log("browser closed");
+        });
 	}
 	else {
 		window.open("http://shoety.de", "_blank");
@@ -68,4 +72,3 @@ Removes the eventlistener for an event.
 ```
 
 Options is an optional Parameter, leaving it out, opens the browser with standard settings.
-
