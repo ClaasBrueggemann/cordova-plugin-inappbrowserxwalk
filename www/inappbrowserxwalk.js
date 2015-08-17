@@ -13,7 +13,7 @@ InAppBrowserXwalk.prototype = {
     addEventListener: function (eventname, func) {
         callbacks[eventname] = func;
     },
-    removeEventListener: function (eventname, func) {
+    removeEventListener: function (eventname) {
         callbacks[eventname] = undefined;
     }
 }

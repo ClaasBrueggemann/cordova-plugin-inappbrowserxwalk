@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.internal.XWalkViewInternal;
+import org.xwalk.core.internal.XWalkCookieManager;
 
 import android.view.View;
 import android.view.Window;
@@ -84,6 +85,9 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             public void run() {
                 dialog = new BrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
                 xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
+                XWalkCookieManager mCookieManager = new XWalkCookieManager();
+                mCookieManager.setAcceptCookie(true);
+                mCookieManager.setAcceptFileSchemeCookies(true);
                 xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
                 xWalkWebView.load(url, "");
 
