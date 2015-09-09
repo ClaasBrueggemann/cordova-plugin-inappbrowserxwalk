@@ -1,5 +1,5 @@
 {
-    "version": "0.3.1",
+    "version": "0.3.2",
     "name": "com.shoety.cordova.plugin.inappbrowserxwalk",
     "cordova_name": "InAppBrowser Crosswalk",
     "platforms": [
