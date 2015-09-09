@@ -15,6 +15,12 @@ InAppBrowserXwalk.prototype = {
     },
     removeEventListener: function (eventname) {
         callbacks[eventname] = undefined;
+    },
+    show: function () {
+        cordova.exec(null, null, "InAppBrowserXwalk", "show", []);
+    },
+    hide: function () {
+        cordova.exec(null, null, "InAppBrowserXwalk", "hide", []);
     }
 }
 

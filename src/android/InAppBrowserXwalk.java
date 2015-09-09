@@ -45,6 +45,14 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             this.closeBrowser();
         }
 
+        if(action.equals("show")) {
+            this.showBrowser();
+        }
+
+        if(action.equals("hide")) {
+            this.hideBrowser();
+        }
+
         return true;
     }
 
@@ -96,6 +104,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 String closeButtonText = "< Close";
                 int closeButtonSize = 25;
                 String closeButtonColor = "#000000";
+                boolean openHidden = false;
 
                 if(data != null && data.length() > 1) {
                     try {
@@ -115,6 +124,9 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                             }
                             if(!options.isNull("closeButtonColor")) {
                                 closeButtonColor = options.getString("closeButtonColor");
+                            }
+                            if(!options.isNull("openHidden")) {
+                                openHidden = options.getBoolean("openHidden");
                             }
                         }
                     catch (JSONException ex) {
@@ -151,7 +163,31 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 dialog.setCancelable(true);
                 LayoutParams layoutParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
                 dialog.addContentView(main, layoutParams);
-                dialog.show();
+                if(!openHidden) {
+                    dialog.show();
+                }
+            }
+        });
+    }
+
+    public void hideBrowser() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(dialog != null) {
+                    dialog.hide();
+                }
+            }
+        });
+    }
+
+    public void showBrowser() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(dialog != null) {
+                    dialog.show();
+                }
             }
         });
     }

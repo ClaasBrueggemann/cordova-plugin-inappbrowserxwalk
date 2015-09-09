@@ -24,7 +24,21 @@ are demonstrated under Examples. If you dont pass options, the browser will open
 ```js
 	browser.close()
 ```
-Closes the browser.
+Closes the browser and destroys dialog and webview.
+
+### hide
+```js
+	browser.hide()
+```
+Hides the browser but does not destroy it. You can call the show() function to make the browser
+visible again.
+
+### show
+```js
+	browser.show()
+```
+Will make a hidden browser visible. Use this after browser.hide() or if the browser was opened
+with the openHidden : true option.
 
 ### addEventListener
 ```js
@@ -49,6 +63,7 @@ Removes the eventlistener for an event.
     				closeButtonText: '< Close',
     				closeButtonSize: '25',
     				closeButtonColor: '#000000',
+                    openHidden: false
 		          };
 
     if( window.cordova && cordova.platformId === "android" ) {

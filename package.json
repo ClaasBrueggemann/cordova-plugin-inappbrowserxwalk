@@ -1,0 +1,18 @@
+{
+    "version": "0.3.0",
+    "name": "com.shoety.cordova.plugin.inappbrowserxwalk",
+    "cordova_name": "InAppBrowser Crosswalk",
+    "platforms": [
+        "android"
+    ],
+    "engines": [
+        {
+            "name": "cordova",
+            "version": ">=3.4.0"
+        }
+    ],
+	"keywords": [
+			"ecosystem:cordova",
+			"cordova-android"
+			]
+}
