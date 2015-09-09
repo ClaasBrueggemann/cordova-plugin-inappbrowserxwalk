@@ -9,7 +9,10 @@ This plugin requires Cordova build with Crosswalk.
 
 ## Installation
 
-    $ cordova plugin add com.shoety.cordova.plugin.inappbrowserxwalk
+    $ cordova plugin add https://github.com/Shoety/cordova-plugin-inappbrowserxwalk
+
+Or if you are using cordova cli version 5.0.0 or higher then you can fetch it from npm :
+https://www.npmjs.com/package/com.shoety.cordova.plugin.inappbrowserxwalk
 
 ## Methods
 
