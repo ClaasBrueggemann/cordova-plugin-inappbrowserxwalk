@@ -1,7 +1,7 @@
 /*global cordova, module*/
 
 function InAppBrowserXwalk() {
-
+ 
 }
 
 var callbacks = new Array ();
