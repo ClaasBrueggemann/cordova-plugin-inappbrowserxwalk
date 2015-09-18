@@ -2,6 +2,7 @@ package com.example.plugin.InAppBrowserXwalk;
 
 import com.example.plugin.InAppBrowserXwalk.BrowserDialog;
 
+import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import org.apache.cordova.*;
 import org.apache.cordova.PluginManager;
@@ -14,11 +15,14 @@ import org.json.JSONException;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.internal.XWalkViewInternal;
-import org.xwalk.core.internal.XWalkCookieManager;
+//import org.xwalk.core.internal.XWalkCookieManager;
 
+import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.ValueCallback;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -51,6 +55,10 @@ public class InAppBrowserXwalk extends CordovaPlugin {
 
         if(action.equals("hide")) {
             this.hideBrowser();
+        }
+
+        if (action.equals("injectScriptCode")) {
+            this.injectJS(data.getString(0));
         }
 
         return true;
@@ -93,9 +101,9 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             public void run() {
                 dialog = new BrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
                 xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
-                XWalkCookieManager mCookieManager = new XWalkCookieManager();
-                mCookieManager.setAcceptCookie(true);
-                mCookieManager.setAcceptFileSchemeCookies(true);
+                //XWalkCookieManager mCookieManager = new XWalkCookieManager();
+                //mCookieManager.setAcceptCookie(true);
+                ///mCookieManager.setAcceptFileSchemeCookies(true);
                 xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
                 xWalkWebView.load(url, "");
 
@@ -205,6 +213,49 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                     result.setKeepCallback(true);
                     callbackContext.sendPluginResult(result);
                 } catch (JSONException ex) {}
+            }
+        });
+    }
+
+
+
+    /**
+     * Inject an object (script or style) into the InAppBrowser WebView.
+     *
+     * This is a helper method for the inject{Script|Style}{Code|File} API calls, which
+     * provides a consistent method for injecting JavaScript code into the document.
+     *
+     * If a wrapper string is supplied, then the source string will be JSON-encoded (adding
+     * quotes) and wrapped using string formatting. (The wrapper string should have a single
+     * '%s' marker)
+     *
+     * @param source      The source object (filename or script/style text) to inject into
+     *                    the document.
+     * @param jsWrapper   A JavaScript string to wrap the source string in, so that the object
+     *                    is properly injected, or null if the source string is JavaScript text
+     *                    which should be executed directly.
+     */
+    public void injectJS(String source) {
+
+        final String finalScriptToInject = source;
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                xWalkWebView.evaluateJavascript(finalScriptToInject, new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String scriptResult) {
+                        try {
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", "jsCallback");
+                            obj.put("result", scriptResult);
+                            PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                            result.setKeepCallback(true);
+                            callbackContext.sendPluginResult(result);
+                        } catch (JSONException ex) {}
+                    }
+                });
             }
         });
     }
