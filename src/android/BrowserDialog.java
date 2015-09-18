@@ -1,4 +1,4 @@
-package com.example.plugin.InAppBrowserXwalk;
+package com.shoety.plugin;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

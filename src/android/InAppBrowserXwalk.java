@@ -1,6 +1,6 @@
-package com.example.plugin.InAppBrowserXwalk;
+package com.shoety.plugin;
 
-import com.example.plugin.InAppBrowserXwalk.BrowserDialog;
+import com.shoety.plugin.BrowserDialog;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
@@ -57,7 +57,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             this.hideBrowser();
         }
 
-        if (action.equals("injectScriptCode")) {
+        if (action.equals("executeScript")) {
             this.injectJS(data.getString(0));
         }
 
@@ -219,22 +219,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
 
 
 
-    /**
-     * Inject an object (script or style) into the InAppBrowser WebView.
-     *
-     * This is a helper method for the inject{Script|Style}{Code|File} API calls, which
-     * provides a consistent method for injecting JavaScript code into the document.
-     *
-     * If a wrapper string is supplied, then the source string will be JSON-encoded (adding
-     * quotes) and wrapped using string formatting. (The wrapper string should have a single
-     * '%s' marker)
-     *
-     * @param source      The source object (filename or script/style text) to inject into
-     *                    the document.
-     * @param jsWrapper   A JavaScript string to wrap the source string in, so that the object
-     *                    is properly injected, or null if the source string is JavaScript text
-     *                    which should be executed directly.
-     */
+
     public void injectJS(String source) {
 
         final String finalScriptToInject = source;
@@ -246,6 +231,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 xWalkWebView.evaluateJavascript(finalScriptToInject, new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String scriptResult) {
+
                         try {
                             JSONObject obj = new JSONObject();
                             obj.put("type", "jsCallback");
