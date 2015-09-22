@@ -21,6 +21,12 @@ InAppBrowserXwalk.prototype = {
     },
     hide: function () {
         cordova.exec(null, null, "InAppBrowserXwalk", "hide", []);
+    },
+    stopLoading: function (scrpt) {
+        cordova.exec(null, null, "InAppBrowserXwalk", "stopLoading", []);
+    },
+    executeScript: function (scrpt) {
+        cordova.exec(null, null, "InAppBrowserXwalk", "executeScript", [scrpt]);
     }
 }
 
@@ -33,6 +39,9 @@ var callback = function(event) {
     }
     if (event.type === "exit" && callbacks['exit'] !== undefined) {
         callbacks['exit']();
+    }
+    if (event.type === "jsCallback" && callbacks['jsCallback'] !== undefined) {
+        callbacks['jsCallback'](event.result);
     }
 }
 
