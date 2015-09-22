@@ -3,25 +3,36 @@ package com.shoety.plugin;
 import com.shoety.plugin.BrowserDialog;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.Resources;
 import org.apache.cordova.*;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.PluginResult;
+import org.apache.cordova.CordovaWebViewImpl;
 
+import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.internal.XWalkViewInternal;
 //import org.xwalk.core.internal.XWalkCookieManager;
+import org.xwalk.core.XWalkCookieManager;
+import org.crosswalk.engine.XWalkCordovaUiClient;
+import org.crosswalk.engine.XWalkCordovaView;
+import org.crosswalk.engine.XWalkWebViewEngine;
 
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -36,6 +47,8 @@ public class InAppBrowserXwalk extends CordovaPlugin {
     private BrowserDialog dialog;
     private XWalkView xWalkWebView;
     private CallbackContext callbackContext;
+
+    private String urlLoading = "";
 
     @Override
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
@@ -57,6 +70,10 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             this.hideBrowser();
         }
 
+        if(action.equals("stopLoading")) {
+            this.stopLoading();
+        }
+
         if (action.equals("executeScript")) {
             this.injectJS(data.getString(0));
         }
@@ -64,17 +81,79 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         return true;
     }
 
+    class MyUIClient extends XWalkUIClient {
+        MyUIClient(XWalkView view) {
+            super(view);
+        }
+
+        // File Chooser
+        @Override
+        public void openFileChooser(XWalkView view, final ValueCallback<Uri> uploadFile, String acceptType, String capture) {
+            uploadFile.onReceiveValue(null);
+            Log.e("X WALK", "walk");
+            //cordova.setActivityResultCallback();
+
+            cordova.setActivityResultCallback(new CordovaPlugin() {
+                @Override
+                public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+                    Log.e("X WALK", "return");
+                    xWalkWebView.onActivityResult(requestCode, resultCode, intent);
+                }
+            });
+
+        }
+
+        @Override
+        public void onPageLoadStarted(XWalkView view, String url) {
+            super.onPageLoadStarted(view, url);
+            Log.e("X WALK load", url);
+
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "loadstart");
+                obj.put("url", url);
+                PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            } catch (JSONException ex) {}
+        }
+
+        @Override
+        public void onPageLoadStopped(XWalkView view, String url, XWalkUIClient.LoadStatus status) {
+            super.onPageLoadStopped(view, url, status);
+            Log.e("X WALK loaded", url);
+
+            try {
+
+                JSONObject obj = new JSONObject();
+                obj.put("type", "loadstop");
+                obj.put("url", url);
+                PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            } catch (JSONException ex) {}
+        }
+
+    }
+
+
+
     class MyResourceClient extends XWalkResourceClient {
            MyResourceClient(XWalkView view) {
                super(view);
            }
-
+            /*
            @Override
            public void onLoadStarted (XWalkView view, String url) {
+               if(xWalkWebView == null) return;
                try {
+
+                   if(urlLoading.equals(view.getUrl())) return;
+                   urlLoading = view.getUrl();
+
                    JSONObject obj = new JSONObject();
                    obj.put("type", "loadstart");
-                   obj.put("url", url);
+                   obj.put("url", view.getUrl());
                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                    result.setKeepCallback(true);
                    callbackContext.sendPluginResult(result);
@@ -83,15 +162,18 @@ public class InAppBrowserXwalk extends CordovaPlugin {
 
            @Override
            public void onLoadFinished (XWalkView view, String url) {
+               if(xWalkWebView == null) return;
                try {
+
                    JSONObject obj = new JSONObject();
                    obj.put("type", "loadstop");
-                   obj.put("url", url);
+                   obj.put("url", view.getUrl());
                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                    result.setKeepCallback(true);
                    callbackContext.sendPluginResult(result);
                } catch (JSONException ex) {}
            }
+           */
    }
 
     private void openBrowser(final JSONArray data) throws JSONException {
@@ -100,12 +182,22 @@ public class InAppBrowserXwalk extends CordovaPlugin {
             @Override
             public void run() {
                 dialog = new BrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
+
+                //XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+
                 xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
+                xWalkWebView.setLayoutParams(new LinearLayout.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
+                xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
+                xWalkWebView.setUIClient(new MyUIClient(xWalkWebView));
+                xWalkWebView.load(url, null);
+                //xWalkWebView = new XWalkView(cordova.getActivity(), cordova.getActivity());
                 //XWalkCookieManager mCookieManager = new XWalkCookieManager();
                 //mCookieManager.setAcceptCookie(true);
-                ///mCookieManager.setAcceptFileSchemeCookies(true);
-                xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
-                xWalkWebView.load(url, "");
+                //mCookieManager.setAcceptFileSchemeCookies(true);
+                //xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
+                //xWalkWebView.setUIClient(new MyUIClient(xWalkWebView));
+                //xWalkWebView.load(url, "");
+
 
                 String toolbarColor = "#FFFFFF";
                 int toolbarHeight = 80;
@@ -174,6 +266,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 if(!openHidden) {
                     dialog.show();
                 }
+
             }
         });
     }
@@ -200,11 +293,21 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         });
     }
 
+    public void stopLoading() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                xWalkWebView.stopLoading();
+            }
+        });
+    }
+
     public void closeBrowser() {
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 xWalkWebView.onDestroy();
+                xWalkWebView = null;
                 dialog.dismiss();
                 try {
                     JSONObject obj = new JSONObject();
