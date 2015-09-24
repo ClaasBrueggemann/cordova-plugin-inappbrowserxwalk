@@ -14,7 +14,7 @@ import org.json.JSONException;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.internal.XWalkViewInternal;
-import org.xwalk.core.internal.XWalkCookieManager;
+import org.xwalk.core.XWalkCookieManager;
 
 import android.view.View;
 import android.view.Window;
