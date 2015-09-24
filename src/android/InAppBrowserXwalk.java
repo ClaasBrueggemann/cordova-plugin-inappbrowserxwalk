@@ -11,9 +11,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
-import org.xwalk.core.internal.XWalkViewInternal;
 import org.xwalk.core.XWalkCookieManager;
 
 import android.view.View;
@@ -56,13 +56,13 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         return true;
     }
 
-    class MyResourceClient extends XWalkResourceClient {
-           MyResourceClient(XWalkView view) {
+    class MyClientUI extends XWalkUIClient {
+           MyClientUI(XWalkView view) {
                super(view);
            }
 
            @Override
-           public void onLoadStarted (XWalkView view, String url) {
+           public void onPageLoadStarted (XWalkView view, String url) {
                try {
                    JSONObject obj = new JSONObject();
                    obj.put("type", "loadstart");
@@ -74,11 +74,18 @@ public class InAppBrowserXwalk extends CordovaPlugin {
            }
 
            @Override
-           public void onLoadFinished (XWalkView view, String url) {
+           public void onPageLoadStopped (XWalkView view, String url, LoadStatus status) {
                try {
+                   String code = (status == LoadStatus.FINISHED) ? "loadstop" : "loaderror";
+
                    JSONObject obj = new JSONObject();
-                   obj.put("type", "loadstop");
+                   obj.put("type", code);
                    obj.put("url", url);
+
+                   if (status != LoadStatus.FINISHED) {
+                       obj.put("status", status == LoadStatus.FAILED ? "failed": "cancelled");
+                   }
+
                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                    result.setKeepCallback(true);
                    callbackContext.sendPluginResult(result);
@@ -96,7 +103,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 XWalkCookieManager mCookieManager = new XWalkCookieManager();
                 mCookieManager.setAcceptCookie(true);
                 mCookieManager.setAcceptFileSchemeCookies(true);
-                xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
+                xWalkWebView.setUIClient(new MyClientUI(xWalkWebView));
                 xWalkWebView.load(url, "");
 
                 String toolbarColor = "#FFFFFF";
@@ -209,3 +216,4 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         });
     }
 }
+
