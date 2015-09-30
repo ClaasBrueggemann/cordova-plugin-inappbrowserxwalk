@@ -56,6 +56,25 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         return true;
     }
 
+    class MyResourceClient extends XWalkResourceClient {
+        MyResourceClient(XWalkView view) { super(view); }
+
+        @Override
+        public void onReceivedLoadError (XWalkView view, int errorCode, String description, String failingUrl) {
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", "loaderror");
+                obj.put("code", errorCode);
+                obj.put("status", "failed");
+                obj.put("description", description);
+                obj.put("url", failingUrl);
+                PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            } catch (JSONException ex) {}
+        }
+    }
+
     class MyClientUI extends XWalkUIClient {
            MyClientUI(XWalkView view) {
                super(view);
@@ -104,6 +123,7 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 mCookieManager.setAcceptCookie(true);
                 mCookieManager.setAcceptFileSchemeCookies(true);
                 xWalkWebView.setUIClient(new MyClientUI(xWalkWebView));
+                xWalkWebView.setResourceClient(new MyResourceClient(xWalkWebView));
                 xWalkWebView.load(url, "");
 
                 String toolbarColor = "#FFFFFF";
@@ -216,4 +236,3 @@ public class InAppBrowserXwalk extends CordovaPlugin {
         });
     }
 }
-
