@@ -1,7 +1,7 @@
 /*global cordova, module*/
 
 function InAppBrowserXwalk() {
- 
+
 }
 
 var callbacks = new Array ();
@@ -25,14 +25,19 @@ InAppBrowserXwalk.prototype = {
 }
 
 var callback = function(event) {
-    if (event.type === "loadstart" && callbacks['loadstart'] !== undefined) {
-        callbacks['loadstart'](event.url);
-    }
-    if (event.type === "loadstop" && callbacks['loadstop'] !== undefined) {
-        callbacks['loadstop'](event.url);
-    }
-    if (event.type === "exit" && callbacks['exit'] !== undefined) {
-        callbacks['exit']();
+    switch (event.type) {
+        case 'loadstart':
+            callbacks['loadstart'] !== undefined && callbacks['loadstart'](event);
+            break;
+        case 'loadstop':
+            callbacks['loadstop'] !== undefined && callbacks['loadstop'](event);
+            break;
+        case 'loaderror':
+            callbacks['loaderror'] !== undefined && callbacks['loaderror'](event);
+            break;
+        case 'exit':
+            callbacks['exit'] != undefined && callbacks['exit']();
+            break;
     }
     if (event.type === "cancel" && callbacks['cancel'] !== undefined) {
         callbacks['cancel']();
