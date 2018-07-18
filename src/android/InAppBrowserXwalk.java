@@ -2,6 +2,7 @@ package com.example.plugin.InAppBrowserXwalk;
 
 import com.example.plugin.InAppBrowserXwalk.BrowserDialog;
 
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import org.apache.cordova.*;
 import org.apache.cordova.PluginManager;
@@ -14,7 +15,7 @@ import org.json.JSONException;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.internal.XWalkViewInternal;
-import org.xwalk.core.internal.XWalkCookieManager;
+import org.xwalk.core.XWalkCookieManager;
 
 import android.view.View;
 import android.view.Window;
@@ -161,6 +162,21 @@ public class InAppBrowserXwalk extends CordovaPlugin {
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
                 dialog.setCancelable(true);
+
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        try {
+                            JSONObject obj = new JSONObject();
+                            obj.put("type", "cancel");
+                            PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                            result.setKeepCallback(true);
+                            callbackContext.sendPluginResult(result);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
                 LayoutParams layoutParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
                 dialog.addContentView(main, layoutParams);
                 if(!openHidden) {

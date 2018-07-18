@@ -34,6 +34,9 @@ var callback = function(event) {
     if (event.type === "exit" && callbacks['exit'] !== undefined) {
         callbacks['exit']();
     }
+    if (event.type === "cancel" && callbacks['cancel'] !== undefined) {
+        callbacks['cancel']();
+    }
 }
 
 module.exports = {
